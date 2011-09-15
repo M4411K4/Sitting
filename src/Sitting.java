@@ -31,7 +31,7 @@ public class Sitting extends Plugin
 	public static final Logger log = Logger.getLogger("Minecraft");
 	
 	public final String NAME = "Sitting";
-	public final String VERSION = "1.0";
+	public final String VERSION = "1.1";
 	
 	private SittingListener listener;
 	private PropertiesFile properties;
@@ -72,6 +72,7 @@ public class Sitting extends Plugin
 	{
 		etc.getLoader().addListener(PluginLoader.Hook.BLOCK_RIGHTCLICKED, listener, this, PluginListener.Priority.MEDIUM);
 		etc.getLoader().addListener(PluginLoader.Hook.COMMAND, listener, this, PluginListener.Priority.MEDIUM);
+		etc.getLoader().addListener(PluginLoader.Hook.SIGN_CHANGE, listener, this, PluginListener.Priority.MEDIUM);
 		
 		log.info(NAME + " " + VERSION + " initialized");
 	}

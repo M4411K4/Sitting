@@ -55,6 +55,20 @@ public class FileUtil
 		"#    Chairs and couches require signs on both sides of the wooden/cobble stairs. \r\n"+
 		"right-click-sit-on-any-stair=true\r\n"+
 		"\r\n"+
+		"#This healing option does nothing if auto-healing is already on.\r\n"+
+		"#none - (default) players will not get healed while they sit. \r\n"+
+		"#all - heals players while they sit. \r\n"+
+		"#chaironly - heals players while they sit on chairs or wooden/cobble stairs. Does not heal players sitting from the /sit command. \r\n"+
+		"#sitcommandonly - heals players while they sit from the /sit command. Does not heal players sitting from right-clicking on chairs \r\n"+
+		"#    or wooden/cobble stairs.\r\n"+
+		"heal-while-sitting=none\r\n"+
+		"\r\n"+
+		"#This healing option does nothing if \"heal-while-sitting\" is disabled.\r\n"+
+		"#Sets the global healing rate while sitting. \r\n"+
+		"#A low value heals over time faster. Values must be a number from 2 to 100. \r\n"+
+		"#20 - (default) heals sitting players approximately every 20 ticks. \r\n"+
+		"heal-while-sitting-rate=20\r\n"+
+		"\r\n"+
 		
 		"";
 		

@@ -24,25 +24,27 @@
 
 public class ChairFormatUtil
 {
-	public static boolean isChair(Block stair, int data, Block left, Block right)
+	public static Sign[] isChair(Block stair, int data, Block left, Block right)
 	{
 		if(stair == null || left == null || right == null || !EntitySitting.isChairBlock(stair.getType()))
-			return false;
+			return null;
 		
-		if(isDefaultChair(stair, data, left, right)
-			|| isTwoBlockCouch(stair, data, left, right)
+		Sign[] signs;
+		if((signs = isDefaultChair(stair, data, left, right)) != null
+			|| (signs = isTwoBlockCouch(stair, data, left, right)) != null
 			)
 		{
-			return true;
+			return signs;
 		}
 		
-		return false;
+		return null;
 	}
 	
-	private static boolean isDefaultChair(Block stair, int data, Block left, Block right)
+	private static Sign[] isDefaultChair(Block stair, int data, Block left, Block right)
 	{
-		int dataL = left.getWorld().getBlockData(left.getX(), left.getY(), left.getZ());
-		int dataR = right.getWorld().getBlockData(right.getX(), right.getY(), right.getZ());
+		World world = stair.getWorld();
+		int dataL = world.getBlockData(left.getX(), left.getY(), left.getZ());
+		int dataR = world.getBlockData(right.getX(), right.getY(), right.getZ());
 		
 		if(left.getType() == 68 && right.getType() == 68
 			&& ((data == 0 && dataL == 3 && dataR == 2)
@@ -51,18 +53,21 @@ public class ChairFormatUtil
 				|| (data == 3 && dataL == 4 && dataR == 5))
 			)
 		{
-			return true;
+			Sign[] signs = new Sign[2];
+			signs[0] = (Sign)world.getComplexBlock(left);
+			signs[1] = (Sign)world.getComplexBlock(right);
+			return signs;
 		}
 		
-		return false;
+		return null;
 	}
 	
-	private static boolean isTwoBlockCouch(Block stair, int data, Block left, Block right)
+	private static Sign[] isTwoBlockCouch(Block stair, int data, Block left, Block right)
 	{
 		if((left.getType() != 68 && right.getType() != 68)
 			|| (!EntitySitting.isChairBlock(left.getType()) && !EntitySitting.isChairBlock(right.getType()))
 			)
-			return false;
+			return null;
 		
 		World world = stair.getWorld();
 		int dataL = world.getBlockData(left.getX(), left.getY(), left.getZ());
@@ -71,24 +76,24 @@ public class ChairFormatUtil
 		if(left.getType() == 68)
 		{
 			if(dataR != data)
-				return false;
+				return null;
 			
-			Block rightBlock = getStairRightBlock(right, dataR);
-			if(rightBlock == null || rightBlock.getType() != 68)
-				return false;
+			right = getStairRightBlock(right, dataR);
+			if(right == null || right.getType() != 68)
+				return null;
 			
-			dataR = world.getBlockData(rightBlock.getX(), rightBlock.getY(), rightBlock.getZ());
+			dataR = world.getBlockData(right.getX(), right.getY(), right.getZ());
 		}
 		else
 		{
 			if(dataL != data)
-				return false;
+				return null;
 			
-			Block leftBlock = getStairLeftBlock(left, dataL);
-			if(leftBlock == null || leftBlock.getType() != 68)
-				return false;
+			left = getStairLeftBlock(left, dataL);
+			if(left == null || left.getType() != 68)
+				return null;
 			
-			dataL = world.getBlockData(leftBlock.getX(), leftBlock.getY(), leftBlock.getZ());
+			dataL = world.getBlockData(left.getX(), left.getY(), left.getZ());
 		}
 		
 		if( (data == 0 && dataL == 3 && dataR == 2)
@@ -97,10 +102,13 @@ public class ChairFormatUtil
 			|| (data == 3 && dataL == 4 && dataR == 5)
 			)
 		{
-			return true;
+			Sign[] signs = new Sign[2];
+			signs[0] = (Sign)world.getComplexBlock(left);
+			signs[1] = (Sign)world.getComplexBlock(right);
+			return signs;
 		}
 		
-		return false;
+		return null;
 	}
 	
 	protected static Block[] getStairSideBlocks(Block block, int data)

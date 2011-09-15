@@ -25,13 +25,49 @@
 public class EntitySitting extends OEntityFish
 {
 	private final double OFFSET_Y;
+	private final int BLOCK_ID;
+	private final SitType[] TYPES;
 	private int ticks = 0;
 	
-	public EntitySitting(OWorld oworld, double x, double y, double z, double offsety)
+	public EntitySitting(SitType[] types, OWorld oworld, double x, double y, double z, double offsety)
 	{
 		super(oworld);
 		c(x, y, z);
+		
+		int nullcount = 0;
+		for(SitType type : types)
+		{
+			if(type == null)
+				nullcount++;
+		}
+		if(nullcount > 0)
+		{
+			SitType[] newtypes = new SitType[types.length - nullcount];
+			int j = 0;
+			for(int i = 0; i < types.length; i++)
+			{
+				if(types[i] == null)
+					continue;
+				newtypes[j] = types[i];
+				j++;
+			}
+			TYPES = newtypes;
+		}
+		else
+		{
+			TYPES = types;
+		}
+		
 		OFFSET_Y = offsety;
+		
+		int blockX = OMathHelper.b(this.aP);
+		int blockY = OMathHelper.b(this.aQ);
+		int blockZ = OMathHelper.b(this.aR);
+		
+		BLOCK_ID = oworld.a(blockX, blockY, blockZ);
+		
+		if(!canSitOnBlock(oworld, blockX, blockY, blockZ))
+			this.J();
 	}
 	
 	public static boolean isChairBlock(int id)
@@ -76,7 +112,11 @@ public class EntitySitting extends OEntityFish
 			this.aJ = null;
 		}
 		
-		if(this.aJ == null || !canSitOnBlock(this.aL, OMathHelper.b(this.aP), OMathHelper.b(this.aQ), OMathHelper.b(this.aR)))
+		int x = OMathHelper.b(this.aP);
+		int y = OMathHelper.b(this.aQ);
+		int z = OMathHelper.b(this.aR);
+		
+		if(this.aJ == null || this.aL.a(x, y, z) != BLOCK_ID || !canSitOnBlock(this.aL, x, y, z))
 		{
 			//dismounted
 			this.J();
@@ -86,11 +126,20 @@ public class EntitySitting extends OEntityFish
 		ticks++;
 		if(ticks >= 1200)
 		{
-			EntitySitting esitting = new EntitySitting(this.aL, this.aP, this.aQ, this.aR, this.OFFSET_Y);
+			EntitySitting esitting = new EntitySitting(this.TYPES, this.aL, this.aP, this.aQ, this.aR, this.OFFSET_Y);
 			this.aL.b(esitting);
 			this.aJ.b(esitting);
 			this.J();
 			return;
+		}
+		
+		if(this.aJ instanceof OEntityPlayerMP)
+		{
+			OEntityPlayerMP eplayer = (OEntityPlayerMP)this.aJ;
+			for(SitType type : TYPES)
+			{
+				type.update(this.aL, this, eplayer);
+			}
 		}
 		
 		this.aS = 0.0D;

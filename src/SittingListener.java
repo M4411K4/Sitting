@@ -36,6 +36,16 @@ public class SittingListener extends PluginListener
 	
 	private boolean requireRightClickPermission;
 	private boolean requiresChairFormats;
+	private HealingType healWhileSitting;
+	protected static int globalHealingRate;
+	
+	private enum HealingType
+	{
+		NONE,
+		CHAIRONLY,
+		SITCOMMANDONLY,
+		ALL
+	};
 	
 	public SittingListener(Sitting sittingPlugin, PropertiesFile properties)
 	{
@@ -51,6 +61,41 @@ public class SittingListener extends PluginListener
 		requiresChairFormats = false;
 		if(this.properties.containsKey("right-click-sit-on-any-stair"))
 			requiresChairFormats = !this.properties.getBoolean("right-click-sit-on-any-stair", true);
+		
+		healWhileSitting = HealingType.NONE;
+		if(this.properties.containsKey("heal-while-sitting"))
+		{
+			try
+			{
+				String type = this.properties.getString("heal-while-sitting", "NONE").toUpperCase();
+				healWhileSitting = HealingType.valueOf(type);
+			}
+			catch(IllegalArgumentException e)
+			{
+				healWhileSitting = HealingType.NONE;
+				Sitting.log.warning("[Sitting]: \"heal-while-sitting\" value not recognized. Setting value to NONE disabling healing.");
+			}
+		}
+		
+		globalHealingRate = 20;
+		if(this.properties.containsKey("heal-while-sitting-rate"))
+		{
+			int rate = this.properties.getInt("heal-while-sitting-rate", 20);
+			if(rate < 2)
+			{
+				Sitting.log.warning("[Sitting]: \"heal-while-sitting-rate\" setting less than 2. Setting value to 2.");
+				globalHealingRate = 2;
+			}
+			else if(rate > 100)
+			{
+				Sitting.log.warning("[Sitting]: \"heal-while-sitting-rate\" setting greater than 100. Setting value to 100.");
+				globalHealingRate = 100;
+			}
+			else
+			{
+				globalHealingRate = rate;
+			}
+		}
 	}
 	
 	@Override
@@ -65,7 +110,17 @@ public class SittingListener extends PluginListener
 			}
 			else
 			{
-				sit(eplayer, player.getWorld(), player.getX(), player.getY(), player.getZ(), player.getRotation(), -0.05D);
+				SitType[] types = new SitType[1];
+				switch(healWhileSitting)
+				{
+					case ALL:
+					case SITCOMMANDONLY:
+						types[0] = SittingType.SIT_HEAL.getType();
+						break;
+					default:
+						types[0] = null;
+				}
+				sit(eplayer, types, player.getWorld(), player.getX(), player.getY(), player.getZ(), player.getRotation(), -0.05D);
 			}
 			
 			return true;
@@ -101,9 +156,16 @@ public class SittingListener extends PluginListener
     {
     	if( (itemInHand == null || itemInHand.getItemId() == 0)
     		&& (!requireRightClickPermission || player.canUseCommand(COMMAND_RIGHT_CLICK_SIT))
-    		&& EntitySitting.isChairBlock(blockClicked.getType())
-    		&& (!requiresChairFormats || isChair(blockClicked)) )
+    		&& EntitySitting.isChairBlock(blockClicked.getType()) )
     	{
+    		Sign[] signs = isChair(blockClicked);
+    		if(signs == null)
+    		{
+    			if(requiresChairFormats)
+    				return;
+				signs = new Sign[0];
+    		}
+    		
     		OEntityPlayerMP eplayer = (OEntityPlayerMP) player.getEntity();
     		World world = player.getWorld();
     		int data = world.getBlockData(blockClicked.getX(), blockClicked.getY(), blockClicked.getZ());
@@ -156,12 +218,72 @@ public class SittingListener extends PluginListener
     	    			rotation = 0F;
         		}
         		
-        		sit(eplayer, player.getWorld(), x, y, z, rotation, 0.5D);
+        		SitType[] types = new SitType[signs.length + 1];
+        		
+        		boolean hasHealing = false;
+        		for(int i = 0; i < signs.length; i++)
+        		{
+        			SittingType sittype = getSittingTypeFromSign(signs[i]);
+        			if(sittype == null)
+        				continue;
+        			
+        			types[i] = sittype.getType(signs[i]);
+        			if(sittype == SittingType.SIT_HEAL)
+        				hasHealing = true;
+        		}
+        		
+        		if(!hasHealing)
+        		{
+					switch(healWhileSitting)
+					{
+						case ALL:
+						case CHAIRONLY:
+							types[types.length-1] = SittingType.SIT_HEAL.getType();
+							break;
+						default:
+							types[types.length-1] = null;
+					}
+        		}
+        		sit(eplayer, types, player.getWorld(), x, y, z, rotation, 0.5D);
     		}
     	}
     }
 	
-	private static void sit(OEntityPlayerMP eplayer, World world, double x, double y, double z, float rotation, double offsety)
+	@Override
+	public boolean onSignChange(Player player, Sign sign)
+	{
+		if(sign.getBlock().getType() != 68 || !signHasSittingType(sign))
+			return false;
+		
+		sign.setText(1, sign.getText(1).toUpperCase());
+		
+		World world = player.getWorld();
+		SittingType sittype = getSittingTypeFromSign(sign);
+		if(sittype == null || !player.canUseCommand(sittype.PERMISSION))
+		{
+			world.setBlockAt(0, sign.getX(), sign.getY(), sign.getZ());
+			world.dropItem(sign.getX(), sign.getY(), sign.getZ(), 323);
+			
+			player.sendMessage(Colors.Rose+"You do not have permission to build that.");
+			return true;
+		}
+		
+		String valid = sittype.validate(sign);
+		if(valid != null)
+		{
+			world.setBlockAt(0, sign.getX(), sign.getY(), sign.getZ());
+			world.dropItem(sign.getX(), sign.getY(), sign.getZ(), 323);
+			
+			player.sendMessage(Colors.Rose+valid);
+			return true;
+		}
+		
+		sign.update();
+		
+		return false;
+	}
+	
+	private static void sit(OEntityPlayerMP eplayer, SitType[] types, World world, double x, double y, double z, float rotation, double offsety)
 	{
 		eplayer.aP = x;
 		eplayer.aQ = y;
@@ -169,7 +291,7 @@ public class SittingListener extends PluginListener
 		eplayer.aV = rotation;
 		
 		OWorldServer oworld = world.getWorld();
-		EntitySitting esitting = new EntitySitting(oworld, eplayer.aP, eplayer.aQ, eplayer.aR, offsety);
+		EntitySitting esitting = new EntitySitting(types, oworld, eplayer.aP, eplayer.aQ, eplayer.aR, offsety);
 		oworld.b(esitting);
 		eplayer.b(esitting);
 	}
@@ -184,13 +306,52 @@ public class SittingListener extends PluginListener
 		eplayer.a.a(eplayer.aP+offsetx, eplayer.aQ+offsety, eplayer.aR+offsetz, eplayer.aV, eplayer.aW);
 	}
 	
-	private static boolean isChair(Block block)
+	/*
+	 * @return Returns null if not a chair. If it is a chair, it will return a list of Sign which can have
+	 *     a size of 0, meaning no signs found, but it is a chair.
+	 */
+	private static Sign[] isChair(Block block)
 	{
 		int data = block.getWorld().getBlockData(block.getX(), block.getY(), block.getZ());
 		Block[] sides = ChairFormatUtil.getStairSideBlocks(block, data);
 		if(sides == null)
-			return false;
+			return null;
 		
 		return ChairFormatUtil.isChair(block, data, sides[0], sides[1]);
+	}
+	
+	private static boolean signHasSittingType(Sign sign)
+	{
+		String line2 = sign.getText(1).toUpperCase();
+		if(line2.isEmpty() || line2.charAt(0) != '[' || line2.charAt(line2.length()-1) != ']')
+			return false;
+		
+		try
+		{
+			SittingType.valueOf(line2.substring(1, line2.length()-1).replace(' ', '_'));
+		}
+		catch(IllegalArgumentException e)
+		{
+			return false;
+		}
+		return true;
+	}
+	
+	private static SittingType getSittingTypeFromSign(Sign sign)
+	{
+		String line2 = sign.getText(1);
+		if(line2.isEmpty() || line2.charAt(0) != '[' || line2.charAt(line2.length()-1) != ']')
+			return null;
+		
+		SittingType sittype = null;
+		try
+		{
+			sittype = SittingType.valueOf(line2.substring(1, line2.length()-1).replace(' ', '_'));
+		}
+		catch(IllegalArgumentException e)
+		{
+			return null;
+		}
+		return sittype;
 	}
 }
