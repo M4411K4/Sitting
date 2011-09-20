@@ -60,14 +60,14 @@ public class EntitySitting extends OEntityFish
 		
 		OFFSET_Y = offsety;
 		
-		int blockX = OMathHelper.b(this.aP);
-		int blockY = OMathHelper.b(this.aQ);
-		int blockZ = OMathHelper.b(this.aR);
+		int blockX = OMathHelper.b(this.bf);
+		int blockY = OMathHelper.b(this.bg);
+		int blockZ = OMathHelper.b(this.bh);
 		
 		BLOCK_ID = oworld.a(blockX, blockY, blockZ);
 		
 		if(!canSitOnBlock(oworld, blockX, blockY, blockZ))
-			this.J();
+			this.N();
 	}
 	
 	public static boolean isChairBlock(int id)
@@ -76,6 +76,8 @@ public class EntitySitting extends OEntityFish
 		{
 			case 53:
 			case 67:
+			case 108:
+			case 109:
 				return true;
 		}
 		return false;
@@ -97,6 +99,9 @@ public class EntitySitting extends OEntityFish
 			|| id == 52 //mob spawner
 			|| id == 65 //ladder
 			|| id == 85 //fence
+			|| id == 101 //iron bars
+			|| id == 102 //glass pane
+			|| id == 107 //fence gate
 			|| OBlock.m[id].e(oworld, x, y, z) == null)
 			return false;
 		return true;
@@ -104,69 +109,69 @@ public class EntitySitting extends OEntityFish
 	
 	@Override
 	//onUpdate
-	public void m_()
+	public void s_()
 	{
-		if(this.aJ != null && this.aJ.bh)
+		if(this.aZ != null && this.aZ.bx)
 		{
 			//sitting player is dead
-			this.aJ = null;
+			this.aZ = null;
 		}
 		
-		int x = OMathHelper.b(this.aP);
-		int y = OMathHelper.b(this.aQ);
-		int z = OMathHelper.b(this.aR);
+		int x = OMathHelper.b(this.bf);
+		int y = OMathHelper.b(this.bg);
+		int z = OMathHelper.b(this.bh);
 		
-		if(this.aJ == null || this.aL.a(x, y, z) != BLOCK_ID || !canSitOnBlock(this.aL, x, y, z))
+		if(this.aZ == null || this.bb.a(x, y, z) != BLOCK_ID || !canSitOnBlock(this.bb, x, y, z))
 		{
 			//dismounted
-			this.J();
+			this.N();
 			return;
 		}
 		
 		ticks++;
 		if(ticks >= 1200)
 		{
-			EntitySitting esitting = new EntitySitting(this.TYPES, this.aL, this.aP, this.aQ, this.aR, this.OFFSET_Y);
-			this.aL.b(esitting);
-			this.aJ.b(esitting);
-			this.J();
+			EntitySitting esitting = new EntitySitting(this.TYPES, this.bb, this.bf, this.bg, this.bh, this.OFFSET_Y);
+			this.bb.b(esitting);
+			this.aZ.a(esitting);
+			this.N();
 			return;
 		}
 		
-		if(this.aJ instanceof OEntityPlayerMP)
+		if(this.aZ instanceof OEntityPlayerMP)
 		{
-			OEntityPlayerMP eplayer = (OEntityPlayerMP)this.aJ;
+			OEntityPlayerMP eplayer = (OEntityPlayerMP)this.aZ;
 			for(SitType type : TYPES)
 			{
-				type.update(this.aL, this, eplayer);
+				type.update(this.bb, this, eplayer);
 			}
 		}
 		
-		this.aS = 0.0D;
-		this.aT = 0.0D;
-		this.aU = 0.0D;
-		this.aJ.aS = 0.0D;
-		this.aJ.aT = 0.0D;
-		this.aJ.aU = 0.0D;
+		this.bi = 0.0D;
+		this.bj = 0.0D;
+		this.bk = 0.0D;
+		this.aZ.bi = 0.0D;
+		this.aZ.bj = 0.0D;
+		this.aZ.bk = 0.0D;
 		a(0.0D, 0.0D, 0.0D);
 	}
 	
 	@Override
 	//getMountedYOffset
-	public double m()
+	public double n()
 	{
 		return OFFSET_Y;
 	}
 	
 	@Override
-	protected boolean n()
+	protected boolean e_()
 	{
 		return false;
 	}
 	
 	@Override
 	//attackEntityFrom
-	public boolean a(OEntity paramOEntity, int paramInt)
+	public boolean a(ODamageSource paramODamageSource, int paramInt)
 	{
 		return false;
 	}
