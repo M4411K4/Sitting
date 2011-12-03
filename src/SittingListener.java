@@ -104,9 +104,9 @@ public class SittingListener extends PluginListener
 		if(split[0].equalsIgnoreCase(COMMAND_SIT) && player.canUseCommand(COMMAND_SIT))
 		{
 			OEntityPlayerMP eplayer = (OEntityPlayerMP) player.getEntity();
-			if(eplayer.ba != null)
+			if(eplayer.be != null)
 			{
-				stand(eplayer, 0, eplayer.ba.n(), 0);
+				stand(eplayer, 0, eplayer.be.q(), 0);
 			}
 			else
 			{
@@ -128,9 +128,9 @@ public class SittingListener extends PluginListener
 		if(split[0].equalsIgnoreCase(COMMAND_STAND))
 		{
 			OEntityPlayerMP eplayer = (OEntityPlayerMP) player.getEntity();
-			if(eplayer.ba == null)
+			if(eplayer.be == null)
         		return true;
-			stand(eplayer, 0, eplayer.ba.n(), 0);
+			stand(eplayer, 0, eplayer.be.q(), 0);
 			
 			return true;
 		}
@@ -169,7 +169,7 @@ public class SittingListener extends PluginListener
     		OEntityPlayerMP eplayer = (OEntityPlayerMP) player.getEntity();
     		World world = player.getWorld();
     		int data = world.getBlockData(blockClicked.getX(), blockClicked.getY(), blockClicked.getZ());
-    		if(eplayer.ba != null)
+    		if(eplayer.be != null)
     		{
     			switch(data)
         		{
@@ -285,25 +285,25 @@ public class SittingListener extends PluginListener
 	
 	private static void sit(OEntityPlayerMP eplayer, SitType[] types, World world, double x, double y, double z, float rotation, double offsety)
 	{
-		eplayer.bf = x;
-		eplayer.bg = y;
-		eplayer.bh = z;
-		eplayer.bl = rotation;
+		eplayer.bj = x;
+		eplayer.bk = y;
+		eplayer.bl = z;
+		eplayer.bp = rotation;
 		
 		OWorldServer oworld = world.getWorld();
-		EntitySitting esitting = new EntitySitting(types, oworld, eplayer.bf, eplayer.bg, eplayer.bh, offsety);
+		EntitySitting esitting = new EntitySitting(types, oworld, eplayer.bj, eplayer.bk, eplayer.bl, offsety);
 		oworld.b(esitting);
-		eplayer.a(esitting);
+		eplayer.b(esitting);
 	}
 	
 	private static void stand(OEntityPlayerMP eplayer, double offsetx, double offsety, double offsetz)
 	{
-		if(!(eplayer.ba instanceof EntitySitting))
+		if(!(eplayer.be instanceof EntitySitting))
 			return;
 		
 		OEntity nullEnt = null;
-		eplayer.a(nullEnt);
-		eplayer.a.a(eplayer.bf+offsetx, eplayer.bg+offsety, eplayer.bh+offsetz, eplayer.bl, eplayer.bm);
+		eplayer.b(nullEnt);
+		eplayer.a.a(eplayer.bj+offsetx, eplayer.bk+offsety, eplayer.bl+offsetz, eplayer.bp, eplayer.bq);
 	}
 	
 	/*

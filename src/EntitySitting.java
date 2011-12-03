@@ -22,7 +22,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-public class EntitySitting extends OEntityFish
+public class EntitySitting extends OEntityFishHook
 {
 	private final double OFFSET_Y;
 	private final int BLOCK_ID;
@@ -60,14 +60,14 @@ public class EntitySitting extends OEntityFish
 		
 		OFFSET_Y = offsety;
 		
-		int blockX = OMathHelper.b(this.bf);
-		int blockY = OMathHelper.b(this.bg);
-		int blockZ = OMathHelper.b(this.bh);
+		int blockX = OMathHelper.b(this.bj);
+		int blockY = OMathHelper.b(this.bk);
+		int blockZ = OMathHelper.b(this.bl);
 		
 		BLOCK_ID = oworld.a(blockX, blockY, blockZ);
 		
 		if(!canSitOnBlock(oworld, blockX, blockY, blockZ))
-			this.N();
+			this.S();
 	}
 	
 	public static boolean isChairBlock(int id)
@@ -78,6 +78,7 @@ public class EntitySitting extends OEntityFish
 			case 67:
 			case 108:
 			case 109:
+			case 114:
 				return true;
 		}
 		return false;
@@ -102,6 +103,7 @@ public class EntitySitting extends OEntityFish
 			|| id == 101 //iron bars
 			|| id == 102 //glass pane
 			|| id == 107 //fence gate
+			|| id == 113 //nether brick fence
 			|| OBlock.m[id].e(oworld, x, y, z) == null)
 			return false;
 		return true;
@@ -109,62 +111,62 @@ public class EntitySitting extends OEntityFish
 	
 	@Override
 	//onUpdate
-	public void s_()
+	public void w_()
 	{
-		if(this.aZ != null && this.aZ.bx)
+		if(this.bd != null && this.bd.bB)
 		{
 			//sitting player is dead
-			this.aZ = null;
+			this.bd = null;
 		}
 		
-		int x = OMathHelper.b(this.bf);
-		int y = OMathHelper.b(this.bg);
-		int z = OMathHelper.b(this.bh);
+		int x = OMathHelper.b(this.bj);
+		int y = OMathHelper.b(this.bk);
+		int z = OMathHelper.b(this.bl);
 		
-		if(this.aZ == null || this.bb.a(x, y, z) != BLOCK_ID || !canSitOnBlock(this.bb, x, y, z))
+		if(this.bd == null || this.bf.a(x, y, z) != BLOCK_ID || !canSitOnBlock(this.bf, x, y, z))
 		{
 			//dismounted
-			this.N();
+			this.S();
 			return;
 		}
 		
 		ticks++;
 		if(ticks >= 1200)
 		{
-			EntitySitting esitting = new EntitySitting(this.TYPES, this.bb, this.bf, this.bg, this.bh, this.OFFSET_Y);
-			this.bb.b(esitting);
-			this.aZ.a(esitting);
-			this.N();
+			EntitySitting esitting = new EntitySitting(this.TYPES, this.bf, this.bj, this.bk, this.bl, this.OFFSET_Y);
+			this.bf.b(esitting);
+			this.bd.b(esitting);
+			this.S();
 			return;
 		}
 		
-		if(this.aZ instanceof OEntityPlayerMP)
+		if(this.bd instanceof OEntityPlayerMP)
 		{
-			OEntityPlayerMP eplayer = (OEntityPlayerMP)this.aZ;
+			OEntityPlayerMP eplayer = (OEntityPlayerMP)this.bd;
 			for(SitType type : TYPES)
 			{
-				type.update(this.bb, this, eplayer);
+				type.update(this.bf, this, eplayer);
 			}
 		}
 		
-		this.bi = 0.0D;
-		this.bj = 0.0D;
-		this.bk = 0.0D;
-		this.aZ.bi = 0.0D;
-		this.aZ.bj = 0.0D;
-		this.aZ.bk = 0.0D;
+		this.bm = 0.0D;
+		this.bn = 0.0D;
+		this.bo = 0.0D;
+		this.bd.bm = 0.0D;
+		this.bd.bn = 0.0D;
+		this.bd.bo = 0.0D;
 		a(0.0D, 0.0D, 0.0D);
 	}
 	
 	@Override
 	//getMountedYOffset
-	public double n()
+	public double q()
 	{
 		return OFFSET_Y;
 	}
 	
 	@Override
-	protected boolean e_()
+	protected boolean g_()
 	{
 		return false;
 	}

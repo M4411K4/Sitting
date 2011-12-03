@@ -67,8 +67,8 @@ public class SitTypeHeal extends SitType
 		PluginLoader.HookResult autoHeal = etc.getInstance().autoHeal();
 		if((oworld.v != 0 || autoHeal != PluginLoader.HookResult.DEFAULT_ACTION) && autoHeal != PluginLoader.HookResult.ALLOW_ACTION)
 		{
-			if(eplayer.an < 20 && eplayer.bM % this.RATE * 12 == 0)
-				eplayer.c(1);
+			if(eplayer.ai() < 20 && eplayer.bQ % this.RATE * 12 == 0)
+				eplayer.d(1);
 		}
 	}
 }
