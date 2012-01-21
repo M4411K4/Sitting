@@ -24,15 +24,19 @@
 
 public class EntitySitting extends OEntityFishHook
 {
+	private final BaseEntity BASE_ENTITY;
+	
 	private final double OFFSET_Y;
 	private final int BLOCK_ID;
 	private final SitType[] TYPES;
 	private int ticks = 0;
 	
-	public EntitySitting(SitType[] types, OWorld oworld, double x, double y, double z, double offsety)
+	public EntitySitting(SitType[] types, OWorldServer oworld, double x, double y, double z, double offsety)
 	{
 		super(oworld);
 		c(x, y, z);
+		
+		BASE_ENTITY = new BaseEntity(this);
 		
 		int nullcount = 0;
 		for(SitType type : types)
@@ -60,14 +64,16 @@ public class EntitySitting extends OEntityFishHook
 		
 		OFFSET_Y = offsety;
 		
-		int blockX = OMathHelper.b(this.bj);
-		int blockY = OMathHelper.b(this.bk);
-		int blockZ = OMathHelper.b(this.bl);
+		int blockX = OMathHelper.b(BASE_ENTITY.getX());
+		int blockY = OMathHelper.b(BASE_ENTITY.getY());
+		int blockZ = OMathHelper.b(BASE_ENTITY.getZ());
 		
-		BLOCK_ID = oworld.a(blockX, blockY, blockZ);
+		World world = new World(oworld);
 		
-		if(!canSitOnBlock(oworld, blockX, blockY, blockZ))
-			this.S();
+		BLOCK_ID = world.getBlockIdAt(blockX, blockY, blockZ);
+		
+		if(!canSitOnBlock(world, blockX, blockY, blockZ))
+			BASE_ENTITY.destroy();
 	}
 	
 	public static boolean isChairBlock(int id)
@@ -84,13 +90,13 @@ public class EntitySitting extends OEntityFishHook
 		return false;
 	}
 	
-	public static boolean canSitOnBlock(OWorld oworld, int x, int y, int z)
+	public static boolean canSitOnBlock(World world, int x, int y, int z)
 	{
-		int id = oworld.a(x, y, z);
+		int id = world.getBlockIdAt(x, y, z);
 		
 		if(id == 0)
 		{
-			id = oworld.a(x, y-1, z);
+			id = world.getBlockIdAt(x, y-1, z);
 			if(id == 0)
 				return false;
 		}
@@ -104,57 +110,56 @@ public class EntitySitting extends OEntityFishHook
 			|| id == 102 //glass pane
 			|| id == 107 //fence gate
 			|| id == 113 //nether brick fence
-			|| OBlock.m[id].e(oworld, x, y, z) == null)
+			|| OBlock.m[id].e(world.getWorld(), x, y, z) == null)
 			return false;
 		return true;
 	}
 	
 	@Override
 	//onUpdate
-	public void w_()
+	public void y_()
 	{
-		if(this.bd != null && this.bd.bB)
+		if(this.bg != null && this.bg.bE)
 		{
 			//sitting player is dead
-			this.bd = null;
+			this.bg = null;
 		}
 		
-		int x = OMathHelper.b(this.bj);
-		int y = OMathHelper.b(this.bk);
-		int z = OMathHelper.b(this.bl);
+		int x = OMathHelper.b(BASE_ENTITY.getX());
+		int y = OMathHelper.b(BASE_ENTITY.getY());
+		int z = OMathHelper.b(BASE_ENTITY.getZ());
 		
-		if(this.bd == null || this.bf.a(x, y, z) != BLOCK_ID || !canSitOnBlock(this.bf, x, y, z))
+		World world = BASE_ENTITY.getWorld();
+		
+		if(this.bg == null || world.getBlockIdAt(x, y, z) != BLOCK_ID || !canSitOnBlock(world, x, y, z))
 		{
 			//dismounted
-			this.S();
+			BASE_ENTITY.destroy();
 			return;
 		}
 		
 		ticks++;
 		if(ticks >= 1200)
 		{
-			EntitySitting esitting = new EntitySitting(this.TYPES, this.bf, this.bj, this.bk, this.bl, this.OFFSET_Y);
-			this.bf.b(esitting);
-			this.bd.b(esitting);
-			this.S();
+			EntitySitting esitting = new EntitySitting(this.TYPES, world.getWorld(), BASE_ENTITY.getX(), BASE_ENTITY.getY(), BASE_ENTITY.getZ(), this.OFFSET_Y);
+			
+			UtilEntity.spawnEntityInWorld(world.getWorld(), esitting);
+			UtilEntity.mountEntity(this.bg, esitting);
+			
+			BASE_ENTITY.destroy();
 			return;
 		}
 		
-		if(this.bd instanceof OEntityPlayerMP)
+		if(this.bg instanceof OEntityPlayerMP)
 		{
-			OEntityPlayerMP eplayer = (OEntityPlayerMP)this.bd;
+			OEntityPlayerMP eplayer = (OEntityPlayerMP)this.bg;
 			for(SitType type : TYPES)
 			{
-				type.update(this.bf, this, eplayer);
+				type.update(world.getWorld(), this, eplayer);
 			}
 		}
 		
-		this.bm = 0.0D;
-		this.bn = 0.0D;
-		this.bo = 0.0D;
-		this.bd.bm = 0.0D;
-		this.bd.bn = 0.0D;
-		this.bd.bo = 0.0D;
+		BASE_ENTITY.setMotion(0.0D, 0.0D, 0.0D);
 		a(0.0D, 0.0D, 0.0D);
 	}
 	

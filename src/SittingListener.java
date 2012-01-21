@@ -103,10 +103,10 @@ public class SittingListener extends PluginListener
 	{
 		if(split[0].equalsIgnoreCase(COMMAND_SIT) && player.canUseCommand(COMMAND_SIT))
 		{
-			OEntityPlayerMP eplayer = (OEntityPlayerMP) player.getEntity();
-			if(eplayer.be != null)
+			OEntity ridingEntity = UtilEntity.ridingEntity(player.getEntity());
+			if(ridingEntity != null)
 			{
-				stand(eplayer, 0, eplayer.be.q(), 0);
+				stand(player, 0, UtilEntity.getMountedYOffset(ridingEntity), 0);
 			}
 			else
 			{
@@ -120,17 +120,17 @@ public class SittingListener extends PluginListener
 					default:
 						types[0] = null;
 				}
-				sit(eplayer, types, player.getWorld(), player.getX(), player.getY(), player.getZ(), player.getRotation(), -0.05D);
+				sit(player, types, player.getWorld(), player.getX(), player.getY(), player.getZ(), player.getRotation(), -0.05D);
 			}
 			
 			return true;
 		}
 		if(split[0].equalsIgnoreCase(COMMAND_STAND))
 		{
-			OEntityPlayerMP eplayer = (OEntityPlayerMP) player.getEntity();
-			if(eplayer.be == null)
+			OEntity ridingEntity = UtilEntity.ridingEntity(player.getEntity());
+			if(ridingEntity == null)
         		return true;
-			stand(eplayer, 0, eplayer.be.q(), 0);
+			stand(player, 0, UtilEntity.getMountedYOffset(ridingEntity), 0);
 			
 			return true;
 		}
@@ -166,27 +166,26 @@ public class SittingListener extends PluginListener
 				signs = new Sign[0];
     		}
     		
-    		OEntityPlayerMP eplayer = (OEntityPlayerMP) player.getEntity();
     		World world = player.getWorld();
     		int data = world.getBlockData(blockClicked.getX(), blockClicked.getY(), blockClicked.getZ());
-    		if(eplayer.be != null)
+    		if(UtilEntity.ridingEntity(player.getEntity()) != null)
     		{
     			switch(data)
         		{
     	    		case 0x0: //south
-    	    			stand(eplayer, -0.8D, 0, 0);
+    	    			stand(player, -0.8D, 0, 0);
     	    			break;
     	    		case 0x1: //north
-    	    			stand(eplayer, 0.8D, 0, 0);
+    	    			stand(player, 0.8D, 0, 0);
     	    			break;
     	    		case 0x2: //west
-    	    			stand(eplayer, 0, 0, -0.8D);
+    	    			stand(player, 0, 0, -0.8D);
     	    			break;
     	    		case 0x3: //east
-    	    			stand(eplayer, 0, 0, 0.8D);
+    	    			stand(player, 0, 0, 0.8D);
     	    			break;
     	    		default:
-    	    			stand(eplayer, 0, 0, 0);
+    	    			stand(player, 0, 0, 0);
         		}
     		}
     		else
@@ -244,7 +243,7 @@ public class SittingListener extends PluginListener
 							types[types.length-1] = null;
 					}
         		}
-        		sit(eplayer, types, player.getWorld(), x, y, z, rotation, 0.5D);
+        		sit(player, types, player.getWorld(), x, y, z, rotation, 0.5D);
     		}
     	}
     }
@@ -283,27 +282,30 @@ public class SittingListener extends PluginListener
 		return false;
 	}
 	
-	private static void sit(OEntityPlayerMP eplayer, SitType[] types, World world, double x, double y, double z, float rotation, double offsety)
+	private static void sit(Player player, SitType[] types, World world, double x, double y, double z, float rotation, double offsety)
 	{
-		eplayer.bj = x;
-		eplayer.bk = y;
-		eplayer.bl = z;
-		eplayer.bp = rotation;
+		player.setX(x);
+		player.setY(y);
+		player.setZ(z);
+		
+		OEntityPlayerMP eplayer = (OEntityPlayerMP) player.getEntity();
+		eplayer.bs = rotation;
 		
 		OWorldServer oworld = world.getWorld();
-		EntitySitting esitting = new EntitySitting(types, oworld, eplayer.bj, eplayer.bk, eplayer.bl, offsety);
-		oworld.b(esitting);
-		eplayer.b(esitting);
+		EntitySitting esitting = new EntitySitting(types, oworld, player.getX(), player.getY(), player.getZ(), offsety);
+		
+		UtilEntity.spawnEntityInWorld(oworld, esitting);
+		UtilEntity.mountEntity(eplayer, esitting);
 	}
 	
-	private static void stand(OEntityPlayerMP eplayer, double offsetx, double offsety, double offsetz)
+	private static void stand(Player player, double offsetx, double offsety, double offsetz)
 	{
-		if(!(eplayer.be instanceof EntitySitting))
+		OEntityPlayerMP eplayer = (OEntityPlayerMP) player.getEntity();
+		if(!(UtilEntity.ridingEntity(eplayer) instanceof EntitySitting))
 			return;
 		
-		OEntity nullEnt = null;
-		eplayer.b(nullEnt);
-		eplayer.a.a(eplayer.bj+offsetx, eplayer.bk+offsety, eplayer.bl+offsetz, eplayer.bp, eplayer.bq);
+		UtilEntity.mountEntity(eplayer, (OEntity)null);
+		eplayer.a.a(player.getX()+offsetx, player.getY()+offsety, player.getZ()+offsetz, player.getRotation(), player.getPitch());
 	}
 	
 	/*
