@@ -122,6 +122,10 @@ public class EntitySitting extends OEntityFishHook
 		if(this.bg != null && this.bg.bE)
 		{
 			//sitting player is dead
+			if(this.bg.bh == this)
+			{
+				this.bg.bh = null;
+			}
 			this.bg = null;
 		}
 		
