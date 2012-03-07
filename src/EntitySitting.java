@@ -117,7 +117,7 @@ public class EntitySitting extends OEntityFishHook
 	
 	@Override
 	//onUpdate
-	public void y_()
+	public void G_()
 	{
 		if(this.bg != null && this.bg.bE)
 		{
@@ -169,7 +169,7 @@ public class EntitySitting extends OEntityFishHook
 	
 	@Override
 	//getMountedYOffset
-	public double q()
+	public double x_()
 	{
 		return OFFSET_Y;
 	}

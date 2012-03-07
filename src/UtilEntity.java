@@ -38,7 +38,7 @@ public class UtilEntity
 	
 	protected static double getMountedYOffset(OEntity oentity)
 	{
-		return oentity.q();
+		return oentity.x_();
 	}
 	
 	/*
