@@ -31,7 +31,7 @@ public class Sitting extends Plugin
 	public static final Logger log = Logger.getLogger("Minecraft");
 	
 	public final String NAME = "Sitting";
-	public final String VERSION = "1.5.0";
+	public final String VERSION = "1.6.0";
 	
 	private SittingListener listener;
 	private PropertiesFile properties;
@@ -60,7 +60,7 @@ public class Sitting extends Plugin
     			Object obj = it.next();
     			if(obj instanceof EntitySitting)
     			{
-    				((EntitySitting)obj).W();
+    				((EntitySitting)obj).X();
     			}
     		}
         }

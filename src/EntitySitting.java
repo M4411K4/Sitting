@@ -117,7 +117,7 @@ public class EntitySitting extends OEntityFishHook
 	
 	@Override
 	//onUpdate
-	public void G_()
+	public void F_()
 	{
 		if(this.bg != null && this.bg.bE)
 		{
