@@ -23,6 +23,8 @@
  */
 
 import java.util.Iterator;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.logging.Logger;
 
 
@@ -31,7 +33,7 @@ public class Sitting extends Plugin
 	public static final Logger log = Logger.getLogger("Minecraft");
 	
 	public final String NAME = "Sitting";
-	public final String VERSION = "1.6.0";
+	public final String VERSION = "1.7.0";
 	
 	private SittingListener listener;
 	private PropertiesFile properties;
@@ -51,18 +53,24 @@ public class Sitting extends Plugin
 	
 	public void disable()
 	{
-		OWorldServer[] oworlds = etc.getMCServer().e;
-        for(int i = 0; i < oworlds.length; i++)
+		Iterator<Entry<String, OWorldServer[]>> worldIter = etc.getMCServer().worlds.entrySet().iterator();
+        while(worldIter.hasNext())
         {
-    		for(@SuppressWarnings("rawtypes")
-    		Iterator it = oworlds[i].b.iterator(); it.hasNext();)
-    		{
-    			Object obj = it.next();
-    			if(obj instanceof EntitySitting)
-    			{
-    				((EntitySitting)obj).X();
-    			}
-    		}
+        	Map.Entry<String, OWorldServer[]> entry = (Map.Entry<String, OWorldServer[]>)worldIter.next();
+        	OWorldServer[] oworlds = (OWorldServer[])entry.getValue();
+        	
+        	for(int i = 0; i < oworlds.length; i++)
+        	{
+	    		for(@SuppressWarnings("rawtypes")
+	    		Iterator it = oworlds[i].b.iterator(); it.hasNext();)
+	    		{
+	    			Object obj = it.next();
+	    			if(obj instanceof EntitySitting)
+	    			{
+	    				((EntitySitting)obj).X();
+	    			}
+	    		}
+        	}
         }
 		
 		log.info(NAME + " " + VERSION + " disabled.");
